@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { userRegister } from "../service/api";
 
 const Register = ({ onClose, onSwitchToLogin }) => {
     const [name, setName] = React.useState("");
@@ -11,17 +12,9 @@ const Register = ({ onClose, onSwitchToLogin }) => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch("http://localhost:5000/api/auth/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ name, email, password }),
-            });
+            const response = await userRegister({ name, email, password });
 
-            const data = await response.json();
-
-            if (response.ok) {
+            if (response && response.data) {
                 toast.success("Registration successful!");
                 // Switch to login modal or navigate to login page
                 if (onSwitchToLogin) {
@@ -30,11 +23,12 @@ const Register = ({ onClose, onSwitchToLogin }) => {
                     navigate('/login');
                 }
             } else {
-                toast.error(data.message || "Registration failed");
+                toast.error("Registration failed");
             }
         } catch (error) {
             console.error("Error during registration:", error);
-            toast.error("An error occurred. Please try again.");
+            const errorMessage = error.response?.data?.message || "An error occurred. Please try again.";
+            toast.error(errorMessage);
         }
     };
 
